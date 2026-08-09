@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaSentinel+ | AI Water Quality Intelligence & Decision Support</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- FEATURE: Always-Visible Top Status Summary Banner -->
+    <div id="top-status-banner" class="top-status-banner banner-safe">
+        <span class="banner-icon" id="banner-icon">🟢</span>
+        <span id="banner-text"><strong>Farm Status: SAFE</strong> — All 3 ponds operating within optimal parameters.</span>
+        <button class="banner-close" onclick="document.getElementById('top-status-banner').style.display='none'">&times;</button>
+    </div>
+
+    <!-- 1. FIXED FULL-SCREEN WHALE CANVAS BACKGROUND -->
+    <canvas id="hero-canvas"></canvas>
+
+    <!-- 2. TRANSPARENT HUD OVERLAY -->
+    <div id="template-overlay">
+        <!-- Top Navigation / Header -->
+        <header class="navbar">
+            <div class="logo">
+                <span class="logo-name">AquaSentinel+</span>
+                <span class="logo-tag">AI WATER INTELLIGENCE v1.3.0</span>
+            </div>
+            
+            <div class="species-selector-wrapper">
+                <label for="species-select" class="selector-label">Target Species:</label>
+                <select id="species-select" class="species-select">
+                    <option value="Shrimp" selected>P. vannamei (Shrimp)</option>
+                    <option value="Tilapia">O. niloticus (Tilapia)</option>
+                    <option value="Carp">C. carpio (Common Carp)</option>
+                </select>
+            </div>
+
+            <!-- Simple / Advanced Mode Toggle -->
+            <div class="mode-toggle-wrapper">
+                <span class="mode-label" id="mode-label-text">Mode: <strong>Full Dashboard</strong></span>
+                <label class="switch">
+                    <input type="checkbox" id="mode-toggle-checkbox" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <nav class="nav-links">
+                <a href="#home" class="active">Home</a>
+                <a href="#guide-section" style="color: #38bdf8; font-weight: 700;">Pond Health Guide</a>
+                <a href="#ponds">Multi-Pond</a>
+                <a href="#what-if">What-If Demo</a>
+                <a href="#trends">Trends</a>
+                <a href="#explainability">Explainability</a>
+                <a href="#leaderboard">Leaderboard</a>
+            </nav>
+
+            <div class="header-controls">
+                <!-- Notification Bell -->
+                <div class="notif-wrapper">
+                    <button class="notif-btn" id="notif-toggle" title="Alert Notifications">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        <span class="notif-badge" id="notif-badge">3</span>
+                    </button>
+                    <div class="notif-dropdown" id="notif-dropdown">
+                        <div class="notif-header">
+                            <h4>Unread Alerts</h4>
+                            <button id="btn-mark-read">Mark all as read</button>
+                        </div>
+                        <div class="notif-list" id="notif-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auth & User Avatar Dropdown -->
+                <div class="user-menu-wrapper" id="user-menu-wrapper">
+                    <button class="btn-login" id="btn-login-modal">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span id="user-display">Admin Login</span>
+                    </button>
+                    
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-dropdown-header">
+                            <strong id="dropdown-user-name">Thirumalai K</strong>
+                            <span id="dropdown-user-role" class="user-role-badge">ADMIN</span>
+                        </div>
+                        <button class="dropdown-item" id="btn-open-add-pond">+ Add New Pond</button>
+                        <a href="guide.html" target="_blank" class="dropdown-item">Pond Health Guide</a>
+                        <button class="dropdown-item" id="btn-logout" style="color:#ef4444;">Logout</button>
+                    </div>
+                </div>
+
+                <button class="btn-live-scan" id="btn-toggle-sim">
+                    <span class="pulse-dot"></span> Live Fleet Stream
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Hero Overlay Section -->
+        <section class="hero-overlay-section" id="home">
+            <div class="hero-container">
+                <div class="hero-grid">
+                    <!-- Left Column Content -->
+                    <div class="hero-left">
+                        <div class="pill-badge">
+                            <span class="dot"></span> AI-Powered • Multi-Pond Monitoring • Coastal Aquaculture
+                        </div>
+                        <h1 class="hero-title">
+                            AI-Powered Water<br>
+                            Quality Intelligence<br>
+                            for Aquaculture.
+                        </h1>
+                        <p class="hero-subtext">
+                            Monitor multi-pond water conditions, predict risk early, and support precision aquaculture decisions with empirical ML modeling.
+                        </p>
+                        <div class="hero-actions">
+                            <a href="#what-if" class="btn-primary">Interactive What-If Demo</a>
+                            <a href="guide.html" target="_blank" class="btn-pdf" style="background: rgba(56, 189, 248, 0.25);">
+                                📖 Farmer Health Guide
+                            </a>
+                            <a href="http://localhost:8000/api/report/pdf" download class="btn-pdf">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Executive PDF
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Right Column Telemetry Cards -->
+                    <div class="hero-right">
+                        <!-- Pollution Index Live Card -->
+                        <div class="telemetry-card card-global" id="tour-pi-card">
+                            <div class="card-header-row">
+                                <h4>
+                                    Pollution Index Score 
+                                    <button class="tooltip-btn" title="What is Pollution Index? A 0-100 score where 0 is optimal safe water and 100 is critical risk.">?</button>
+                                </h4>
+                                <span class="badge-time status-safe" id="status-badge">🟢 SAFE</span>
+                            </div>
+                            <div class="pi-score-display">
+                                <span class="pi-number" id="pi-score-val">12.4</span>
+                                <span class="pi-denom">/ 100</span>
+                            </div>
+                            <p class="pi-desc" id="pi-status-desc">Convention: 0.0 = Optimal (Safe) | 100.0 = Critical. Water parameters are optimal.</p>
+                        </div>
+
+                        <!-- Farmer Verdict Sentence Widget -->
+                        <div class="telemetry-card card-verdict" style="background: rgba(3, 25, 55, 0.65) !important;">
+                            <div class="card-header-row">
+                                <h4>"Will My Fish Survive?" Verdict</h4>
+                                <span class="badge-year">Farmer Friendly</span>
+                            </div>
+                            <p class="verdict-sentence" id="farmer-verdict-text">
+                                ✅ <strong>Your Shrimp are safe right now.</strong> All water conditions are within a healthy range.
+                            </p>
+                        </div>
+
+                        <!-- Best Model Performance Card -->
+                        <div class="telemetry-card card-impact">
+                            <div class="card-header-row">
+                                <h4>
+                                    Best Model Performance
+                                    <button class="tooltip-btn" title="Empirical accuracy measured using 5-Fold Stratified Cross Validation with zero data leakage.">?</button>
+                                </h4>
+                                <span class="badge-year" id="best-model-name">SVM Classifier</span>
+                            </div>
+                            <div class="card-stat">
+                                <span class="stat-number" id="best-model-acc">91.98%</span>
+                                <span class="stat-label">5-Fold Stratified CV Accuracy</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Embedded Pond Health Guide Section for Farmers -->
+        <section class="stats-section" id="guide-section">
+            <div class="section-header">
+                <span class="section-tag">Farmer Handbook</span>
+                <h2 class="section-title">Pond Health & Parameter Guide</h2>
+                <p class="section-subtext">Plain-language explanations of water parameters, safe ranges, and survival rules for non-technical farmers.</p>
+            </div>
+            
+            <div class="feature-card" style="margin-bottom: 24px;">
+                <div class="panel-header">
+                    <h3>"Will My Fish Survive?" Quick Status</h3>
+                    <a href="guide.html" target="_blank" class="btn-pdf" style="padding: 6px 14px; font-size: 0.8rem;">Open Full Handbook Page ↗</a>
+                </div>
+                <div class="verdict-banner-widget" style="margin-bottom: 0;">
+                    <div class="verdict-headline" id="embedded-verdict-headline">
+                        <span>🟢</span> <span>Your Shrimp are safe right now. All conditions are within a healthy range.</span>
+                    </div>
+                    <div class="action-box-plain">
+                        <strong>What should I do right now?</strong>
+                        <p id="embedded-action-desc" style="margin-top: 6px; color: #cbd5e1;">Keep regular monitoring. Water parameters are optimal. No immediate emergency intervention required.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mini Parameter Glossary Cards -->
+            <div class="multi-ponds-grid">
+                <div class="pond-card">
+                    <h4 style="color:#38bdf8;">Dissolved Oxygen (DO)</h4>
+                    <p style="font-size:0.8rem; color:#cbd5e1; margin:6px 0;"><strong>Air for Fish:</strong> Oxygen in water for breathing. Keep above 5.0 mg/L to prevent suffocation.</p>
+                    <div class="thermo-track" style="height:10px; background:rgba(255,255,255,0.1); border-radius:5px; position:relative;">
+                        <div style="position:absolute; left:40%; width:40%; height:100%; background:rgba(34,197,94,0.4);"></div>
+                        <div style="position:absolute; left:60%; width:6px; height:100%; background:#38bdf8;"></div>
+                    </div>
+                </div>
+                <div class="pond-card">
+                    <h4 style="color:#38bdf8;">Ammonia (NH3)</h4>
+                    <p style="font-size:0.8rem; color:#cbd5e1; margin:6px 0;"><strong>Waste & Toxin:</strong> Rotting food and waste toxin. Keep below 0.05 mg/L to prevent gill burns.</p>
+                    <div class="thermo-track" style="height:10px; background:rgba(255,255,255,0.1); border-radius:5px; position:relative;">
+                        <div style="position:absolute; left:0%; width:35%; height:100%; background:rgba(34,197,94,0.4);"></div>
+                        <div style="position:absolute; left:15%; width:6px; height:100%; background:#38bdf8;"></div>
+                    </div>
+                </div>
+                <div class="pond-card">
+                    <h4 style="color:#38bdf8;">pH Level</h4>
+                    <p style="font-size:0.8rem; color:#cbd5e1; margin:6px 0;"><strong>Water Sourness:</strong> Measure of acidity. Keep steady between 7.5 and 8.5 (clean tap water).</p>
+                    <div class="thermo-track" style="height:10px; background:rgba(255,255,255,0.1); border-radius:5px; position:relative;">
+                        <div style="position:absolute; left:50%; width:35%; height:100%; background:rgba(34,197,94,0.4);"></div>
+                        <div style="position:absolute; left:65%; width:6px; height:100%; background:#38bdf8;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FIX 1 RESTORED: Multi-Pond Simultaneous Monitoring Section -->
+        <section class="stats-section" id="ponds">
+            <div class="section-header">
+                <span class="section-tag">Multi-Pond Fleet Telemetry</span>
+                <h2 class="section-title">Simultaneous Multi-Pond Farm Monitoring</h2>
+            </div>
+            <div class="multi-ponds-grid" id="multi-ponds-container">
+                <!-- Static Pre-Populated 3 Pond Cards (Dynamically refreshed) -->
+                <div class="pond-card">
+                    <div class="pond-card-header">
+                        <div>
+                            <h4 class="pond-title">Pond A</h4>
+                            <span class="pond-species">Shrimp</span>
+                        </div>
+                        <span class="badge-time status-safe">🟢 SAFE</span>
+                    </div>
+                    <div style="display:flex; align-items:baseline; gap:6px;">
+                        <span class="pond-pi-val">7.1</span>
+                        <span style="color:#64748b; font-size:0.9rem;">/ 100 PI</span>
+                    </div>
+                    <div class="pond-metrics-mini">
+                        <div class="pond-metric-item"><span>pH</span><strong>8.16</strong></div>
+                        <div class="pond-metric-item"><span>DO</span><strong>5.55 mg/L</strong></div>
+                        <div class="pond-metric-item"><span>NH3</span><strong>0.009 ppm</strong></div>
+                    </div>
+                </div>
+
+                <div class="pond-card">
+                    <div class="pond-card-header">
+                        <div>
+                            <h4 class="pond-title">Pond B</h4>
+                            <span class="pond-species">Tilapia</span>
+                        </div>
+                        <span class="badge-time status-safe">🟢 SAFE</span>
+                    </div>
+                    <div style="display:flex; align-items:baseline; gap:6px;">
+                        <span class="pond-pi-val">8.4</span>
+                        <span style="color:#64748b; font-size:0.9rem;">/ 100 PI</span>
+                    </div>
+                    <div class="pond-metrics-mini">
+                        <div class="pond-metric-item"><span>pH</span><strong>7.60</strong></div>
+                        <div class="pond-metric-item"><span>DO</span><strong>5.71 mg/L</strong></div>
+                        <div class="pond-metric-item"><span>NH3</span><strong>0.055 ppm</strong></div>
+                    </div>
+                </div>
+
+                <div class="pond-card">
+                    <div class="pond-card-header">
+                        <div>
+                            <h4 class="pond-title">Pond C</h4>
+                            <span class="pond-species">Carp</span>
+                        </div>
+                        <span class="badge-time status-moderate">🟡 MODERATE</span>
+                    </div>
+                    <div style="display:flex; align-items:baseline; gap:6px;">
+                        <span class="pond-pi-val">58.8</span>
+                        <span style="color:#64748b; font-size:0.9rem;">/ 100 PI</span>
+                    </div>
+                    <div class="pond-metrics-mini">
+                        <div class="pond-metric-item"><span>pH</span><strong>6.78</strong></div>
+                        <div class="pond-metric-item"><span>DO</span><strong>3.72 mg/L</strong></div>
+                        <div class="pond-metric-item"><span>NH3</span><strong>0.140 ppm</strong></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- What-If Interactive Sliders Section -->
+        <section class="stats-section" id="what-if">
+            <div class="section-header">
+                <span class="section-tag">Interactive Simulation & What-If Engine</span>
+                <h2 class="section-title">Test Real-Time Water Quality Parameters</h2>
+            </div>
+
+            <div class="what-if-grid">
+                <!-- Sliders Panel -->
+                <div class="feature-card sliders-panel" id="tour-sliders">
+                    <div class="panel-header">
+                        <h3>Water Parameter Sliders</h3>
+                        <span class="small-blue-tag">Live Control</span>
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label-row">
+                            <label>pH Level:</label>
+                            <span class="slider-val" id="val-ph">7.8</span>
+                        </div>
+                        <input type="range" id="slider-ph" min="4.0" max="10.0" step="0.1" value="7.8">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label-row">
+                            <label>Dissolved Oxygen (DO - mg/L):</label>
+                            <span class="slider-val" id="val-do">6.5</span>
+                        </div>
+                        <input type="range" id="slider-do" min="0.0" max="12.0" step="0.1" value="6.5">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label-row">
+                            <label>Ammonia (NH3 - mg/L):</label>
+                            <span class="slider-val" id="val-ammonia">0.02</span>
+                        </div>
+                        <input type="range" id="slider-ammonia" min="0.0" max="0.5" step="0.01" value="0.02">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label-row">
+                            <label>Nitrate (NO3 - mg/L):</label>
+                            <span class="slider-val" id="val-nitrate">5.0</span>
+                        </div>
+                        <input type="range" id="slider-nitrate" min="0.0" max="100.0" step="1.0" value="5.0">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label-row">
+                            <label>Turbidity (NTU):</label>
+                            <span class="slider-val" id="val-turbidity">35.0</span>
+                        </div>
+                        <input type="range" id="slider-turbidity" min="0.0" max="100.0" step="1.0" value="35.0">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label-row">
+                            <label>Temperature (°C):</label>
+                            <span class="slider-val" id="val-temp">28.5</span>
+                        </div>
+                        <input type="range" id="slider-temp" min="15.0" max="40.0" step="0.5" value="28.5">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-label-row">
+                            <label>Salinity (ppt):</label>
+                            <span class="slider-val" id="val-salinity">15.0</span>
+                        </div>
+                        <input type="range" id="slider-salinity" min="0.0" max="45.0" step="0.5" value="15.0">
+                    </div>
+                </div>
+
+                <!-- Results & Inference Panel -->
+                <div class="feature-card results-panel">
+                    <div class="panel-header">
+                        <h3>AI Decision Support & Inference</h3>
+                        <span class="small-blue-tag">FastAPI Backend</span>
+                    </div>
+
+                    <div class="classification-box" id="classification-box">
+                        <div class="class-title-row">
+                            <h4>Status: <span id="res-classification">🟢 SAFE</span></h4>
+                            <span class="anomaly-tag" id="res-anomaly">
+                                Normal Pattern
+                                <button class="tooltip-btn" title="Anomaly Detection: Isolation Forest checks if sensor values represent abnormal hardware/environmental spikes.">?</button>
+                            </span>
+                        </div>
+                        <p class="explanation-text" id="res-explanation">FastAPI inference engine processed readings successfully.</p>
+                    </div>
+
+                    <!-- Parameter Contribution Bars -->
+                    <div class="contributions-block">
+                        <h4>Pollution Index Relative Parameter Deviations</h4>
+                        <div class="contribution-bars" id="contribution-bars">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Recommendations List -->
+                    <div class="recommendations-block">
+                        <h4>Decision Support Recommendations</h4>
+                        <ul class="recs-list" id="recs-list">
+                            <li>All water parameters within safe operational bounds.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trend Line Charts Section -->
+        <section class="stats-section" id="trends">
+            <div class="section-header">
+                <span class="section-tag">Historical Telemetry</span>
+                <h2 class="section-title">24-Hour Parameter Trend Analysis</h2>
+            </div>
+            <div class="feature-card trend-chart-card">
+                <div class="panel-header">
+                    <h3>Dissolved Oxygen (DO) & Ammonia (NH3) Trend Line</h3>
+                    <span class="small-blue-tag">Time-Series Feed</span>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="trend-canvas" width="1000" height="220"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- FIX 2 RESTORED: Model Explainability (SHAP) -->
+        <section class="stats-section" id="explainability">
+            <div class="section-header">
+                <span class="section-tag">Model Explainability</span>
+                <h2 class="section-title">ML Feature Importance & Drivers</h2>
+            </div>
+            <div class="feature-card explain-card">
+                <div class="panel-header">
+                    <h3>
+                        Global ML Feature Importances
+                        <button class="tooltip-btn" title="SHAP Values measure how much each sensor parameter pushes the model towards Safe vs Critical.">?</button>
+                    </h3>
+                    <span class="small-blue-tag">SHAP Driver Analysis</span>
+                </div>
+                <div class="shap-bars" id="shap-bars">
+                    <!-- Pre-populated fallback SHAP bars -->
+                    <div class="shap-item"><span class="shap-label">DISSOLVED OXYGEN</span><div class="shap-bar-outer"><div class="shap-bar-inner" style="width: 28.5%;"></div></div><span class="shap-val">28.5%</span></div>
+                    <div class="shap-item"><span class="shap-label">AMMONIA</span><div class="shap-bar-outer"><div class="shap-bar-inner" style="width: 24.2%;"></div></div><span class="shap-val">24.2%</span></div>
+                    <div class="shap-item"><span class="shap-label">PH</span><div class="shap-bar-outer"><div class="shap-bar-inner" style="width: 15.8%;"></div></div><span class="shap-val">15.8%</span></div>
+                    <div class="shap-item"><span class="shap-label">TEMPERATURE</span><div class="shap-bar-outer"><div class="shap-bar-inner" style="width: 11.4%;"></div></div><span class="shap-val">11.4%</span></div>
+                    <div class="shap-item"><span class="shap-label">TURBIDITY</span><div class="shap-bar-outer"><div class="shap-bar-inner" style="width: 8.1%;"></div></div><span class="shap-val">8.1%</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FIX 2 RESTORED: Model Evaluation Leaderboard Table -->
+        <section class="stats-section" id="leaderboard">
+            <div class="section-header">
+                <span class="section-tag">Empirical ML Benchmark</span>
+                <h2 class="section-title">Trained Model Evaluation Leaderboard</h2>
+                <p class="section-subtext">Evaluated on 4,300 AWD samples using 5-Fold Stratified Cross Validation (Data leakage fixed).</p>
+            </div>
+
+            <div class="table-card">
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Model Name</th>
+                            <th>Accuracy</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>F1 Score <button class="tooltip-btn" title="F1-Score is the harmonic mean of precision and recall.">?</button></th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <tr><td><strong>SVM</strong></td><td>91.98%</td><td>92.42%</td><td>91.67%</td><td>91.97%</td><td><span class="badge-best">BEST MODEL</span></td></tr>
+                        <tr><td><strong>Random Forest</strong></td><td>91.86%</td><td>92.29%</td><td>91.47%</td><td>91.81%</td><td><span style="color:#64748b;">Evaluated</span></td></tr>
+                        <tr><td><strong>XGBoost</strong></td><td>91.86%</td><td>92.29%</td><td>91.47%</td><td>91.81%</td><td><span style="color:#64748b;">Evaluated</span></td></tr>
+                        <tr><td><strong>KNN</strong></td><td>91.51%</td><td>92.04%</td><td>91.12%</td><td>91.49%</td><td><span style="color:#64748b;">Evaluated</span></td></tr>
+                        <tr><td><strong>Decision Tree</strong></td><td>90.23%</td><td>90.42%</td><td>89.32%</td><td>89.83%</td><td><span style="color:#64748b;">Evaluated</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Alerts Section -->
+        <section class="stats-section" id="alerts">
+            <div class="section-header">
+                <span class="section-tag">Human-Readable Monitoring Logs</span>
+                <h2 class="section-title">Recent System Alerts & Export</h2>
+            </div>
+
+            <div class="alerts-container">
+                <div class="alerts-list-card">
+                    <div class="alerts-header">
+                        <h3>Live Risk Alert Log</h3>
+                        <div class="export-actions">
+                            <a href="http://localhost:8000/api/report" download class="btn-demo">Download CSV</a>
+                            <a href="http://localhost:8000/api/report/pdf" download class="btn-pdf">Download PDF Report</a>
+                        </div>
+                    </div>
+                    <div class="alerts-scroll-box" id="alerts-box">
+                        <p class="no-alerts">No critical alerts detected in recent monitoring cycle.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Architecture Section -->
+        <section class="startup-section" id="architecture">
+            <div class="startup-container">
+                <div class="section-header">
+                    <span class="section-tag">System Architecture</span>
+                    <h2 class="section-title">AquaSentinel+ End-to-End Pipeline</h2>
+                </div>
+                <div class="arch-flow-grid">
+                    <div class="arch-box">
+                        <div class="arch-step">01</div>
+                        <h4>Sensor & Data Layer</h4>
+                        <p>Public AWD Dataset & simulated live IoT sensor data ingestion.</p>
+                    </div>
+                    <div class="arch-box">
+                        <div class="arch-step">02</div>
+                        <h4>Preprocessing</h4>
+                        <p>StandardScaler normalization, missing value imputation & SMOTE balancing.</p>
+                    </div>
+                    <div class="arch-box">
+                        <div class="arch-step">03</div>
+                        <h4>ML Classification</h4>
+                        <p>Multi-model inference (SVM, Random Forest, XGBoost, KNN, DT).</p>
+                    </div>
+                    <div class="arch-box">
+                        <div class="arch-step">04</div>
+                        <h4>Pollution Index</h4>
+                        <p>Normalized 0–100 score weighted by species-specific safe profiles.</p>
+                    </div>
+                    <div class="arch-box">
+                        <div class="arch-step">05</div>
+                        <h4>Anomaly & Trend</h4>
+                        <p>Isolation Forest anomaly detection & time-series trend analysis.</p>
+                    </div>
+                    <div class="arch-box">
+                        <div class="arch-step">06</div>
+                        <h4>Decision Support</h4>
+                        <p>Species-specific actionable recommendations & live alert dispatch.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Status Footer Card -->
+        <section class="stats-section">
+            <div class="feature-card health-footer-card">
+                <div class="health-grid">
+                    <div class="health-item">
+                        <span class="health-label">API Health</span>
+                        <span class="health-val" id="health-status">Healthy (12ms)</span>
+                    </div>
+                    <div class="health-item">
+                        <span class="health-label">Best Model</span>
+                        <span class="health-val" id="health-model">SVM (91.98% Accuracy)</span>
+                    </div>
+                    <div class="health-item">
+                        <span class="health-label">Dataset Size</span>
+                        <span class="health-val">4,300 AWD Samples</span>
+                    </div>
+                    <div class="health-item">
+                        <span class="health-label">Test Suite</span>
+                        <span class="health-val">9 PyTest Unit Tests Passing</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Closing Signature Section -->
+        <section class="closing-section" id="closing">
+            <div class="closing-container">
+                <div class="closing-card">
+                    <div class="closing-logo-mark">AquaSentinel+</div>
+                    <blockquote class="closing-quote">
+                        "Turning water-quality data into smarter aquaculture decisions."
+                    </blockquote>
+                    <div class="closing-divider"></div>
+                    <div class="creator-profile">
+                        <h3 class="creator-name">THIRUMALAI K</h3>
+                        <p class="creator-role">Creator & Developer</p>
+                        <p class="creator-subtext">Building intelligent technology for coastal aquaculture decisions.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- FIX 3 VERIFIED: Auth Modal with Register & Login Tabs -->
+    <div class="modal-overlay" id="login-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" id="tab-login-btn">Log In</button>
+                    <button class="auth-tab" id="tab-register-btn">Register Farmer</button>
+                </div>
+                <button class="modal-close" id="login-close">&times;</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form">
+                <div class="input-group">
+                    <label>Email Address or Username</label>
+                    <input type="text" id="login-user" value="admin@aquasentinel.demo" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-pass" value="demo1234" required>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin: 10px 0;">
+                    <input type="checkbox" id="remember-me" checked>
+                    <label for="remember-me" style="font-size:0.8rem; color:#cbd5e1;">Remember Me (7 Days)</label>
+                </div>
+                <p class="demo-credentials-note">Evaluator Demo Account: <code>admin@aquasentinel.demo</code> / <code>demo1234</code></p>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 14px;">Log In to Farm System</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" style="display:none;">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="reg-name" placeholder="John Farmer" required>
+                </div>
+                <div class="input-group">
+                    <label>Farm Name</label>
+                    <input type="text" id="reg-farm" placeholder="Sunrise Coastal Aqua" required>
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="reg-email" placeholder="john@farm.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="reg-pass" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 14px;">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add New Pond Modal -->
+    <div class="modal-overlay" id="add-pond-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Add New Farm Pond</h3>
+                <button class="modal-close" id="add-pond-close">&times;</button>
+            </div>
+            <form id="add-pond-form">
+                <div class="input-group">
+                    <label>Pond Name / Location</label>
+                    <input type="text" id="pond-name-input" placeholder="Pond D - East Sector" required>
+                </div>
+                <div class="input-group">
+                    <label>Target Cultured Species</label>
+                    <select id="pond-species-input" style="width:100%; background:rgba(15,23,42,0.8); border:1px solid rgba(0,180,255,0.3); padding:10px; border-radius:8px; color:#fff;">
+                        <option value="Shrimp">P. vannamei (Shrimp)</option>
+                        <option value="Tilapia">O. niloticus (Tilapia)</option>
+                        <option value="Carp">C. carpio (Common Carp)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 14px;">+ Register Pond</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- FAQ Accordion Modal -->
+    <div class="modal-overlay" id="faq-modal">
+        <div class="modal-card" style="max-width: 550px;">
+            <div class="modal-header">
+                <h3>Farmer Help & FAQ</h3>
+                <button class="modal-close" id="faq-close">&times;</button>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-q">What is the Pollution Index score?</button>
+                    <div class="faq-a">The Pollution Index (0 to 100) measures total water stress. 0 to 30 is SAFE (green), 30 to 60 is MODERATE (yellow), and 60+ is CRITICAL (red).</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q">What should I do on a CRITICAL alert?</button>
+                    <div class="faq-a">Check your Dissolved Oxygen and Ammonia immediately. Turn on paddlewheel aerators, stop feeding, and perform a partial water exchange.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q">How often is pond telemetry data updated?</button>
+                    <div class="faq-a">Live stream updates every 3 seconds during simulation. Real IoT deployments update continuously via sensors.</div>
+                </div>
+            </div>
+            <a href="guide.html" target="_blank" class="btn-primary" style="width: 100%; margin-top: 18px; text-align: center; display: block;">Open Full Pond Health Handbook</a>
+        </div>
+    </div>
+
+    <!-- First-Time User Guided Tour Overlay -->
+    <div class="tour-overlay" id="tour-overlay">
+        <div class="tour-card">
+            <span class="tour-step-badge" id="tour-step-badge">Step 1 of 5</span>
+            <h3 id="tour-title">Welcome to AquaSentinel+</h3>
+            <p id="tour-desc">Let's take a quick 30-second tour of your new AI smart water monitoring system.</p>
+            <div class="tour-actions">
+                <button class="btn-demo" id="tour-skip-btn">Skip Tour</button>
+                <button class="btn-primary" id="tour-next-btn">Next Step →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Persistent Floating Help Button -->
+    <button class="floating-help-btn" id="floating-help-btn" title="Open Farmer Help & FAQ">
+        ? Help
+    </button>
+
+    <!-- Session Expired Toast -->
+    <div class="toast-notification" id="toast-notification">
+        <span id="toast-text">Session expired. Please log in again.</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

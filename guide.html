@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pond Health Guide | AquaSentinel+ Plain-Language Farmer Handbook</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background-color: #030c1c;
+            color: #ffffff;
+        }
+        .guide-page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 4% 100px;
+        }
+        .guide-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .guide-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        .guide-subtext {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .verdict-banner-widget {
+            background: rgba(3, 20, 48, 0.7);
+            border: 2px solid #38bdf8;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 50px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0, 180, 255, 0.15);
+        }
+        .verdict-headline {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+        .action-box-plain {
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid #38bdf8;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .glossary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+        .glossary-card {
+            background: rgba(3, 15, 35, 0.6);
+            border: 1px solid rgba(0, 180, 255, 0.25);
+            border-radius: 18px;
+            padding: 24px;
+            backdrop-filter: blur(8px);
+        }
+        .glossary-card h3 {
+            font-size: 1.3rem;
+            color: #38bdf8;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .analog-tag {
+            font-size: 0.75rem;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+        .glossary-q {
+            font-weight: 700;
+            color: #e2e8f0;
+            margin: 12px 0 4px;
+            font-size: 0.9rem;
+        }
+        .glossary-p {
+            font-size: 0.88rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+        /* Thermometer visual gauge bar */
+        .thermometer-wrapper {
+            margin-top: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .thermo-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+        .thermo-track {
+            height: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 7px;
+            position: relative;
+            overflow: hidden;
+        }
+        .thermo-ideal-zone {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            background: rgba(34, 197, 94, 0.4);
+            border-left: 2px solid #22c55e;
+            border-right: 2px solid #22c55e;
+        }
+        .thermo-pointer {
+            position: absolute;
+            top: 0;
+            width: 6px;
+            height: 100%;
+            background: #38bdf8;
+            box-shadow: 0 0 10px #38bdf8;
+        }
+        .ref-table-card {
+            background: rgba(3, 15, 35, 0.6);
+            border: 1px solid rgba(0, 180, 255, 0.25);
+            border-radius: 20px;
+            padding: 30px;
+        }
+        .ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .ref-table th, .ref-table td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.9rem;
+        }
+        .ref-table th {
+            color: #38bdf8;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <span class="logo-name">AquaSentinel+</span>
+            <span class="logo-tag">POND HEALTH GUIDE FOR FARMERS</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html#home">← Back to Dashboard</a>
+            <a href="#glossary" class="active">Parameter Glossary</a>
+            <a href="#verdict">Fish Survival Verdict</a>
+            <a href="#reference">Species Reference</a>
+        </div>
+        <div class="header-controls">
+            <a href="index.html#home" class="btn-primary">Open Main Dashboard</a>
+        </div>
+    </header>
+
+    <div class="guide-page-container">
+        <div class="guide-header">
+            <h1 class="guide-title">Pond Health Guide for Farmers</h1>
+            <p class="guide-subtext">A plain-language, jargon-free guide designed to help you understand your water quality, protect your fish and shrimp, and prevent farm losses.</p>
+        </div>
+
+        <!-- 1. "Will My Fish Survive?" Verdict Widget -->
+        <div class="verdict-banner-widget" id="verdict">
+            <div class="verdict-headline" id="guide-verdict-title">
+                <span>🟢</span> <span>Your Shrimp are safe right now. All conditions are within a healthy range.</span>
+            </div>
+            <div class="action-box-plain">
+                <strong>What should I do right now?</strong>
+                <p id="guide-action-desc" style="margin-top: 6px; color: #cbd5e1;">Keep regular monitoring. Water parameters are optimal. No immediate emergency intervention required.</p>
+            </div>
+        </div>
+
+        <!-- 2. Parameter Glossary Section -->
+        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 24px; color: #ffffff;" id="glossary">Water Quality Parameter Glossary</h2>
+        <div class="glossary-grid">
+            <!-- Dissolved Oxygen -->
+            <div class="glossary-card">
+                <h3>Dissolved Oxygen (DO) <span class="analog-tag">Air for Fish</span></h3>
+                <p class="glossary-q">What is this?</p>
+                <p class="glossary-p">Dissolved oxygen is the invisible oxygen trapped in water that fish and shrimp breathe through their gills.</p>
+                <p class="glossary-q">Why does it matter?</p>
+                <p class="glossary-p">Just like humans need fresh air, aquatic life depends on high oxygen levels to stay active, eat food, and grow fast.</p>
+                <p class="glossary-q">What if it's too low?</p>
+                <p class="glossary-p">If oxygen drops below 4.0 mg/L, fish gasp at the surface, stop eating, and can suffocate within hours.</p>
+                
+                <div class="thermometer-wrapper">
+                    <div class="thermo-header">
+                        <span>Current: <strong>6.5 mg/L</strong></span>
+                        <span>Ideal Zone: 5.0 - 9.0 mg/L</span>
+                    </div>
+                    <div class="thermo-track">
+                        <div class="thermo-ideal-zone" style="left: 45%; width: 40%;"></div>
+                        <div class="thermo-pointer" style="left: 60%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ammonia -->
+            <div class="glossary-card">
+                <h3>Ammonia (NH3) <span class="analog-tag">Waste & Toxin</span></h3>
+                <p class="glossary-q">What is this?</p>
+                <p class="glossary-p">Ammonia is a toxic waste product created from fish droppings and uneaten food rotting at the pond bottom.</p>
+                <p class="glossary-q">Why does it matter?</p>
+                <p class="glossary-p">High ammonia damages fish gills and burns their skin, making them sick and vulnerable to disease.</p>
+                <p class="glossary-q">What if it's too high?</p>
+                <p class="glossary-p">Keep ammonia under 0.05 mg/L. High levels stop growth and cause sudden mass mortality.</p>
+                
+                <div class="thermometer-wrapper">
+                    <div class="thermo-header">
+                        <span>Current: <strong>0.02 mg/L</strong></span>
+                        <span>Safe: < 0.05 mg/L</span>
+                    </div>
+                    <div class="thermo-track">
+                        <div class="thermo-ideal-zone" style="left: 0%; width: 35%;"></div>
+                        <div class="thermo-pointer" style="left: 15%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- pH Level -->
+            <div class="glossary-card">
+                <h3>pH Level <span class="analog-tag">Water Sourness</span></h3>
+                <p class="glossary-q">What is this?</p>
+                <p class="glossary-p">pH measures whether water is too acidic (sour) or too alkaline (soapy). Think of clean drinking tap water.</p>
+                <p class="glossary-q">Why does it matter?</p>
+                <p class="glossary-p">Shrimp and fish thrive in stable, slightly alkaline water (pH 7.5 to 8.5).</p>
+                <p class="glossary-q">What if it fluctuates?</p>
+                <p class="glossary-p">Sudden pH swings stress shrimp molting and weaken fish skin immunity.</p>
+                
+                <div class="thermometer-wrapper">
+                    <div class="thermo-header">
+                        <span>Current: <strong>7.8 pH</strong></span>
+                        <span>Ideal Zone: 7.5 - 8.5</span>
+                    </div>
+                    <div class="thermo-track">
+                        <div class="thermo-ideal-zone" style="left: 55%; width: 30%;"></div>
+                        <div class="thermo-pointer" style="left: 65%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Turbidity -->
+            <div class="glossary-card">
+                <h3>Turbidity <span class="analog-tag">Water Clarity</span></h3>
+                <p class="glossary-q">What is this?</p>
+                <p class="glossary-p">Turbidity measures how cloudy or muddy the water looks due to suspended algae and mud particles.</p>
+                <p class="glossary-q">Why does it matter?</p>
+                <p class="glossary-p">Good cloudiness (25-45 NTU) means healthy green plankton food for shrimp. Too muddy blocks sunlight.</p>
+                <p class="glossary-q">What if it's too high?</p>
+                <p class="glossary-p">Excess mud clogs fish gills and reduces natural oxygen production.</p>
+                
+                <div class="thermometer-wrapper">
+                    <div class="thermo-header">
+                        <span>Current: <strong>35 NTU</strong></span>
+                        <span>Ideal Zone: 25 - 45 NTU</span>
+                    </div>
+                    <div class="thermo-track">
+                        <div class="thermo-ideal-zone" style="left: 25%; width: 40%;"></div>
+                        <div class="thermo-pointer" style="left: 45%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Temperature -->
+            <div class="glossary-card">
+                <h3>Water Temperature <span class="analog-tag">Pond Warmth</span></h3>
+                <p class="glossary-q">What is this?</p>
+                <p class="glossary-p">The warmth of the pond water, influenced by sunlight, shade, and weather seasons.</p>
+                <p class="glossary-q">Why does it matter?</p>
+                <p class="glossary-p">Fish are cold-blooded; temperature dictates how fast they digest food and grow.</p>
+                <p class="glossary-q">What if it's too hot/cold?</p>
+                <p class="glossary-p">Above 32°C water loses oxygen rapidly; below 22°C fish stop eating completely.</p>
+                
+                <div class="thermometer-wrapper">
+                    <div class="thermo-header">
+                        <span>Current: <strong>28.5 °C</strong></span>
+                        <span>Ideal Zone: 26 - 31 °C</span>
+                    </div>
+                    <div class="thermo-track">
+                        <div class="thermo-ideal-zone" style="left: 40%; width: 35%;"></div>
+                        <div class="thermo-pointer" style="left: 55%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salinity -->
+            <div class="glossary-card">
+                <h3>Salinity <span class="analog-tag">Salt Content</span></h3>
+                <p class="glossary-q">What is this?</p>
+                <p class="glossary-p">The amount of natural salt dissolved in the coastal water.</p>
+                <p class="glossary-q">Why does it matter?</p>
+                <p class="glossary-p">Coastal shrimp require moderate salt water (10-25 ppt) to build strong shells.</p>
+                <p class="glossary-q">What if heavy rains occur?</p>
+                <p class="glossary-p">Heavy rainfall dilutes salt levels rapidly, causing shrimp shell molting stress.</p>
+                
+                <div class="thermometer-wrapper">
+                    <div class="thermo-header">
+                        <span>Current: <strong>15 ppt</strong></span>
+                        <span>Ideal Zone: 10 - 25 ppt</span>
+                    </div>
+                    <div class="thermo-track">
+                        <div class="thermo-ideal-zone" style="left: 25%; width: 45%;"></div>
+                        <div class="thermo-pointer" style="left: 40%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Species Survival Reference Table -->
+        <div class="ref-table-card" id="reference">
+            <h2 style="font-size: 1.6rem; font-weight: 800; color: #ffffff; margin-bottom: 12px;">Species Survival Quick-Reference Table</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px;">Use this reference table to quickly sanity-check your pond water readings manually.</p>
+
+            <table class="ref-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>P. vannamei (Shrimp)</th>
+                        <th>O. niloticus (Tilapia)</th>
+                        <th>C. carpio (Common Carp)</th>
+                        <th>Farmer Rule of Thumb</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Dissolved Oxygen (DO)</strong></td>
+                        <td>5.0 - 9.0 mg/L</td>
+                        <td>4.0 - 8.0 mg/L</td>
+                        <td>5.0 - 8.0 mg/L</td>
+                        <td>Keep above 5.0 — paddlewheel aeration prevents suffocation.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ammonia (NH3)</strong></td>
+                        <td>0.00 - 0.05 mg/L</td>
+                        <td>0.00 - 0.10 mg/L</td>
+                        <td>0.00 - 0.05 mg/L</td>
+                        <td>Keep near 0.0 — clean waste & avoid overfeeding.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>pH Level</strong></td>
+                        <td>7.5 - 8.5 pH</td>
+                        <td>6.5 - 9.0 pH</td>
+                        <td>7.0 - 8.5 pH</td>
+                        <td>Keep steady like clean tap water. Add agricultural lime if acidic.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Turbidity</strong></td>
+                        <td>25 - 45 NTU</td>
+                        <td>30 - 60 NTU</td>
+                        <td>30 - 50 NTU</td>
+                        <td>Slightly green algae water is good; dark mud blocks light.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Temperature</strong></td>
+                        <td>26 - 32 °C</td>
+                        <td>24 - 32 °C</td>
+                        <td>20 - 28 °C</td>
+                        <td>Avoid hot surface water during summer afternoons.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Salinity</strong></td>
+                        <td>10 - 25 ppt</td>
+                        <td>0 - 15 ppt</td>
+                        <td>0 - 5 ppt</td>
+                        <td>Shrimp need salt for shell growth; Carp prefer freshwater.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
