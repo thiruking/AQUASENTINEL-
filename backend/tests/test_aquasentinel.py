@@ -123,6 +123,22 @@ def test_api_metrics_endpoint():
     assert len(metrics) >= 5
     assert any(m["is_best"] for m in metrics)
 
+
+def test_report_downloads_are_valid_files():
+    """CSV and PDF report endpoints must send actual downloadable file data."""
+    csv_response = client.get("/api/report")
+    assert csv_response.status_code == 200
+    assert csv_response.headers["content-type"].startswith("text/csv")
+    assert "attachment;" in csv_response.headers["content-disposition"]
+    assert csv_response.content.startswith(b"timestamp,species,")
+
+    pdf_response = client.get("/api/report/pdf")
+    assert pdf_response.status_code == 200
+    assert pdf_response.headers["content-type"] == "application/pdf"
+    assert "attachment;" in pdf_response.headers["content-disposition"]
+    assert pdf_response.content.startswith(b"%PDF-")
+    assert len(pdf_response.content) > 500
+
 def test_user_registration_and_login():
     """
     Test JWT Authentication: Register, Login, and Auth Token validation.
