@@ -212,3 +212,11 @@ def test_user_pond_creation():
     assert data["name"] == "Test Pond Delta"
     assert data["species"] == "Tilapia"
 
+
+
+def test_extreme_slider_values_are_critical():
+    payload = {"species": "Shrimp", "temperature": 40, "turbidity": 99, "DO": 12,
+               "ph": 10, "ammonia": 0.5, "nitrate": 100, "salinity": 44.5}
+    response = client.post("/api/predict", json=payload)
+    assert response.status_code == 200
+    assert response.json()["final_classification"] == "CRITICAL"

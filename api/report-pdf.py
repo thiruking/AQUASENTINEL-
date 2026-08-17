@@ -22,9 +22,10 @@ def build_pdf() -> bytes:
     y = 750
     commands = ["BT"]
     for text, size in lines:
+        # Tm resets the text matrix for every line. Using relative Td commands
+        # moved later lines outside the page and produced an apparently blank PDF.
         commands.append(f"/F1 {size} Tf")
-        commands.append(f"50 {y} Td ({_escape_pdf_text(text)}) Tj")
-        commands.append(f"-50 {-26 if size >= 14 else -20} Td")
+        commands.append(f"1 0 0 1 50 {y} Tm ({_escape_pdf_text(text)}) Tj")
         y -= 26 if size >= 14 else 20
     commands.append("ET")
     stream = "\n".join(commands).encode("latin-1")
