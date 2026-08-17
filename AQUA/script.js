@@ -22,9 +22,10 @@
     let jwtToken = localStorage.getItem('aquasentinel_jwt') || sessionStorage.getItem('aquasentinel_jwt') || null;
     let currentUser = null;
 
-    // Use the page origin so the dashboard works in local development and
-    // behind a reverse proxy / hosted preview without browser-side localhost calls.
-    const API_BASE = '/api';
+    // Vercel injects AQUASENTINEL_API_URL at build time. If it is not set,
+    // use same-origin API routes for local FastAPI and serverless fallbacks.
+    const configuredApiUrl = (window.AQUASENTINEL_API_URL || '').replace(/\/$/, '');
+    const API_BASE = configuredApiUrl ? `${configuredApiUrl}/api` : '/api';
 
     function getFrameFilename(index) {
         const frameNum = String(index + 1).padStart(3, '0');
@@ -178,6 +179,7 @@
         initGuidedTour();
         initFAQModal();
         initPondModal();
+        configureReportLinks();
 
         fetchHealthStatus();
         fetchModelMetrics();
@@ -229,6 +231,17 @@
         }
 
         triggerPrediction();
+    }
+
+
+    function configureReportLinks() {
+        if (!configuredApiUrl) return;
+        document.querySelectorAll('[data-report="pdf"]').forEach(link => {
+            link.href = `${API_BASE}/report-pdf`;
+        });
+        document.querySelectorAll('[data-report="csv"]').forEach(link => {
+            link.href = `${API_BASE}/report-csv`;
+        });
     }
 
     // FEATURE 1: Simple Mode vs Advanced Mode Toggle
@@ -389,8 +402,10 @@
             if (res.ok) {
                 currentUser = await res.json();
                 updateUserSessionUI(currentUser);
-            } else {
-                // Token expired
+            } else if (res.status === 401 || res.status === 403) {
+                // Only an authentication response proves a previously stored
+                // token expired. A 404/5xx backend deployment error must not
+                // incorrectly show "Session expired" to a visitor.
                 showToast('Session expired. Please log in again.');
                 jwtToken = null;
                 localStorage.removeItem('aquasentinel_jwt');

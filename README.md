@@ -88,3 +88,17 @@ and API on the same origin (or configure a reverse proxy).
 ## 📌 Demo Credentials for Evaluators
 - **Admin Email**: `admin@aquasentinel.demo`
 - **Password**: `demo1234`
+
+## Public API deployment (Render + Vercel)
+
+1. In Render, create a **Blueprint** from this repository. Render reads
+   `render.yaml` and deploys the FastAPI service. Copy its public URL, for
+   example `https://aquasentinel-api.onrender.com`.
+2. In Vercel project settings, add the production environment variable
+   `AQUASENTINEL_API_URL` with that URL (**without** `/api` at the end).
+3. Redeploy Vercel. Its build writes the public value into `runtime-config.js`.
+   The dashboard then sends predictions, trends, alerts, authentication, CSV,
+   and PDF downloads to the public FastAPI API instead of `localhost`.
+
+The FastAPI CORS middleware permits the Vercel frontend origin. Do not put
+secrets in `AQUASENTINEL_API_URL`; it is intentionally a browser-visible URL.
