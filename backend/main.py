@@ -495,6 +495,7 @@ def download_report(db: Session = Depends(get_db)):
     )
 
 # ENHANCEMENT 6: Downloadable PDF Summary Report Endpoint
+@app.get("/api/report-pdf")
 @app.get("/api/report/pdf")
 def download_pdf_report(pond: str = "Pond A", species: str = "Shrimp", db: Session = Depends(get_db)):
     pdf_bytes = generate_pdf_report(db, pond_name=pond, species=species)

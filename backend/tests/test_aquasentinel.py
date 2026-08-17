@@ -152,9 +152,11 @@ def test_report_downloads_are_valid_files():
     assert "attachment;" in csv_response.headers["content-disposition"]
     assert csv_response.content.startswith(b"timestamp,species,")
 
-    pdf_response = client.get("/api/report/pdf")
+    # Both the legacy URL and the Vercel-safe URL must return the PDF.
+    pdf_response = client.get("/api/report-pdf")
     assert pdf_response.status_code == 200
     assert pdf_response.headers["content-type"] == "application/pdf"
+    assert client.get("/api/report/pdf").status_code == 200
     assert "attachment;" in pdf_response.headers["content-disposition"]
     assert pdf_response.content.startswith(b"%PDF-")
     assert len(pdf_response.content) > 500

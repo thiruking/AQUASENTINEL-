@@ -74,6 +74,15 @@ The FastAPI server now serves the dashboard and API from the same origin, so
 predictions, authentication, reports, and live telemetry work without a
 separate static server or browser-side `localhost` API configuration.
 
+## Vercel report downloads
+
+The repository includes dependency-free Vercel serverless download handlers at
+`/api/report` and `/api/report-pdf`. They make CSV and PDF report downloads work
+on a Vercel static deployment as well as during a local FastAPI run. For live
+predictions, authentication, and database-backed telemetry on a public site,
+deploy the FastAPI service to a Python-capable backend and keep the dashboard
+and API on the same origin (or configure a reverse proxy).
+
 ---
 
 ## 📌 Demo Credentials for Evaluators
