@@ -822,21 +822,30 @@
         }).join('');
     }
 
+    function buildHostedTrendData(tick = 0) {
+        const base = [
+            [6.8, 0.02], [6.5, 0.02], [6.2, 0.03],
+            [5.9, 0.04], [5.5, 0.06], [6.4, 0.02]
+        ];
+        const now = new Date();
+        return base.map(([oxygen, ammonia], index) => {
+            const phase = Math.sin((tick + index) / 2) * 0.22;
+            const time = new Date(now.getTime() - (base.length - 1 - index) * 2 * 60 * 60 * 1000);
+            return {
+                time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                dissolved_oxygen: +(oxygen + phase).toFixed(2),
+                ammonia: +Math.max(0.01, ammonia - phase / 20).toFixed(3)
+            };
+        });
+    }
+
     async function fetchTrends() {
         try {
             const res = await fetch(`${API_BASE}/trends`);
             if (!res.ok) throw new Error(`Trend request failed: ${res.status}`);
-            const trends = await res.json();
-            drawTrendLineChart(trends);
+            drawTrendLineChart(await res.json());
         } catch (e) {
-            drawTrendLineChart([
-                { time: '02:00', dissolved_oxygen: 6.8, ammonia: 0.02 },
-                { time: '04:00', dissolved_oxygen: 6.5, ammonia: 0.02 },
-                { time: '06:00', dissolved_oxygen: 6.2, ammonia: 0.03 },
-                { time: '08:00', dissolved_oxygen: 5.9, ammonia: 0.04 },
-                { time: '10:00', dissolved_oxygen: 5.5, ammonia: 0.06 },
-                { time: '12:00', dissolved_oxygen: 6.4, ammonia: 0.02 }
-            ]);
+            drawTrendLineChart(buildHostedTrendData(hostedStreamTick));
         }
     }
 
@@ -1036,6 +1045,7 @@
         const updateStream = async () => {
             if (useHostedFallback) {
                 renderHostedStreamTick();
+                drawTrendLineChart(buildHostedTrendData(hostedStreamTick));
                 return;
             }
             try {
