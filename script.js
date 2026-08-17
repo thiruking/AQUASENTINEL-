@@ -13,10 +13,14 @@
     let isSimulating = false;
     let simInterval = null;
 
-    let jwtToken = sessionStorage.getItem('aquasentinel_jwt') || null;
+    // Prefer the persistent session only when the user explicitly selected
+    // “Remember me”; otherwise keep the token scoped to this browser tab.
+    let jwtToken = localStorage.getItem('aquasentinel_jwt') || sessionStorage.getItem('aquasentinel_jwt') || null;
     let currentUser = null;
 
-    const API_BASE = 'http://localhost:8000/api';
+    // Use the page origin so the dashboard works in local development and
+    // behind a reverse proxy / hosted preview without browser-side localhost calls.
+    const API_BASE = '/api';
 
     function getFrameFilename(index) {
         const frameNum = String(index + 1).padStart(3, '0');

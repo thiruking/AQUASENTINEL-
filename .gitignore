@@ -1,0 +1,7 @@
+# Python bytecode and local runtime state
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local environment files
+.venv/

@@ -5,6 +5,8 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, Response, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -42,7 +44,9 @@ def seed_initial_data():
             db.add(admin_user)
             db.commit()
             db.refresh(admin_user)
-        else:
+        elif not verify_password("demo1234", admin_user.hashed_password):
+            # Repair only an invalid evaluator credential; do not rewrite the
+            # SQLite file on every application startup.
             admin_user.hashed_password = hash_password("demo1234")
             db.commit()
 
@@ -58,7 +62,7 @@ def seed_initial_data():
             )
             db.add(alias_admin)
             db.commit()
-        else:
+        elif not verify_password("aquasentinel123", alias_admin.hashed_password):
             alias_admin.hashed_password = hash_password("aquasentinel123")
             db.commit()
 
@@ -87,14 +91,24 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
+    # Authentication is sent in an Authorization header, not a cookie. Keeping
+    # credentials disabled makes a wildcard development origin valid in browsers.
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/")
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_DIR = PROJECT_ROOT
+
+@app.get("/", include_in_schema=False)
 def read_root():
+    """Serve the dashboard and its API from one origin."""
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+@app.get("/api")
+def api_index():
     return {
         "status": "online",
         "app": "AquaSentinel+",
@@ -213,15 +227,12 @@ def logout():
 
 # USER POND MANAGEMENT ENDPOINTS
 @app.get("/api/user/ponds")
-def get_user_ponds(current_user: Optional[User] = Depends(get_current_user), db: Session = Depends(get_db)):
-    if not current_user or current_user.role == "admin":
+def get_user_ponds(current_user: User = Depends(get_required_user), db: Session = Depends(get_db)):
+    # Ponds are farm data: never expose every user's pond list to an anonymous
+    # visitor. Administrators can manage the complete evaluator fleet.
+    if current_user.role == "admin":
         return db.query(Pond).all()
-    
-    user_ponds = db.query(Pond).filter(Pond.owner_id == current_user.id).all()
-    if not user_ponds:
-        # Fallback default ponds
-        return db.query(Pond).limit(3).all()
-    return user_ponds
+    return db.query(Pond).filter(Pond.owner_id == current_user.id).all()
 
 @app.post("/api/ponds/create", response_model=PondResponse)
 def create_pond(pond_in: PondCreateInput, current_user: User = Depends(get_required_user), db: Session = Depends(get_db)):
@@ -239,7 +250,7 @@ def create_pond(pond_in: PondCreateInput, current_user: User = Depends(get_requi
 def delete_pond(pond_id: int, current_user: User = Depends(get_required_user), db: Session = Depends(get_db)):
     pond = db.query(Pond).filter(Pond.id == pond_id).first()
     if not pond:
-        raise HTTPException(status_code=44, detail="Pond not found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pond not found.")
     if pond.owner_id != current_user.id and current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized to delete this pond.")
 
@@ -492,3 +503,7 @@ def download_pdf_report(pond: str = "Pond A", species: str = "Shrimp", db: Sessi
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename=AquaSentinel_Executive_Report_{pond.replace(' ', '_')}.pdf"}
     )
+
+# Keep this mount last: API routes above retain precedence and the dashboard,
+# guide, styles, scripts, and animation frames are all available from one host.
+app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
