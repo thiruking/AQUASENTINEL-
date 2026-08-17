@@ -1,3 +1,0 @@
-{
-  "buildCommand": "python3 scripts/generate_runtime_config.py"
-}
