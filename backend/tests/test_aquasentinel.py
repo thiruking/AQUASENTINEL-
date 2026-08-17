@@ -113,6 +113,26 @@ def test_api_predict_endpoint():
     assert "final_classification" in data
     assert "parameter_contributions" in data
 
+def test_extreme_reading_is_critical():
+    """Dangerous slider values must never be reported as SAFE."""
+    payload = {
+        "species": "Shrimp",
+        "temperature": 40.0,
+        "turbidity": 99.0,
+        "DO": 12.0,
+        "ph": 10.0,
+        "ammonia": 0.5,
+        "nitrate": 100.0,
+        "salinity": 44.5,
+    }
+    response = client.post("/api/predict", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["pollution_index"] >= 60.0
+    assert data["final_classification"] == "CRITICAL"
+    assert data["recommendations"]
+
+
 def test_api_metrics_endpoint():
     """
     Test /api/model/metrics endpoint.

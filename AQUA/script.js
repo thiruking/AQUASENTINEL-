@@ -12,6 +12,10 @@
     let basePath = '';
     let isSimulating = false;
     let simInterval = null;
+    // Slider input events can overlap. Only the newest prediction is allowed
+    // to update the dashboard so an old SAFE response cannot overwrite a new
+    // CRITICAL reading.
+    let latestPredictionRequest = 0;
 
     // Prefer the persistent session only when the user explicitly selected
     // “Remember me”; otherwise keep the token scoped to this browser tab.
@@ -574,18 +578,29 @@
 
     async function triggerPrediction() {
         const payload = getSliderPayload();
+        const requestId = ++latestPredictionRequest;
         try {
             const res = await fetch(`${API_BASE}/predict`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (res.ok) {
-                const data = await res.json();
+            if (!res.ok) {
+                throw new Error(`Prediction request failed with status ${res.status}`);
+            }
+
+            const data = await res.json();
+            // Ignore delayed responses from older slider positions.
+            if (requestId === latestPredictionRequest) {
                 updatePredictionUI(data);
             }
         } catch (e) {
-            fallbackClientPrediction(payload);
+            // The what-if tool remains useful if the API is temporarily down
+            // or the page was opened through a static server.
+            if (requestId === latestPredictionRequest) {
+                fallbackClientPrediction(payload);
+                showToast('Live API unavailable — showing a local what-if estimate. Start FastAPI for full reports and AI results.');
+            }
         }
     }
 
