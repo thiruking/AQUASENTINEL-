@@ -1,6 +1,7 @@
 import os
 import joblib
 import numpy as np
+import pandas as pd
 from .preprocessing import FEATURE_COLS, REVERSE_LABEL_MAP
 
 ARTIFACTS_DIR = os.path.join(os.path.dirname(__file__), "artifacts")
@@ -49,7 +50,10 @@ class ModelClassifier:
                     val = 0.0
             vec.append(float(val))
 
-        scaled_vec = self.scaler.transform(np.array(vec).reshape(1, -1))
+        # Preserve feature names used when the scaler was fitted. This avoids
+        # feature-order ambiguity and sklearn's runtime validation warnings.
+        feature_frame = pd.DataFrame([vec], columns=FEATURE_COLS)
+        scaled_vec = self.scaler.transform(feature_frame)
         pred_class_idx = self.model.predict(scaled_vec)[0]
         probs = self.model.predict_proba(scaled_vec)[0]
         confidence = float(probs[pred_class_idx])
