@@ -773,19 +773,19 @@
         });
     }
 
+    const hostedPondFallback = [
+        { id: 1, name: 'Pond A', species: 'Shrimp', pollution_index: 12.4, final_classification: 'SAFE', readings: { ph: 7.8, dissolved_oxygen: 6.5, ammonia: 0.02 } },
+        { id: 2, name: 'Pond B', species: 'Tilapia', pollution_index: 38.5, final_classification: 'MODERATE', readings: { ph: 7.2, dissolved_oxygen: 4.8, ammonia: 0.08 } },
+        { id: 3, name: 'Pond C', species: 'Carp', pollution_index: 15.0, final_classification: 'SAFE', readings: { ph: 7.9, dissolved_oxygen: 6.8, ammonia: 0.01 } }
+    ];
+
     async function fetchMultiPonds() {
         try {
             const res = await fetch(`${API_BASE}/user/ponds`, { headers: getAuthHeaders() });
-            if (res.ok) {
-                const ponds = await res.json();
-                renderMultiPonds(ponds);
-            }
+            if (!res.ok) throw new Error(`Pond request failed: ${res.status}`);
+            renderMultiPonds(await res.json());
         } catch (e) {
-            renderMultiPonds([
-                { id: 1, name: 'Pond A', species: 'Shrimp', pollution_index: 12.4, final_classification: 'SAFE', readings: { ph: 7.8, dissolved_oxygen: 6.5, ammonia: 0.02 } },
-                { id: 2, name: 'Pond B', species: 'Tilapia', pollution_index: 38.5, final_classification: 'MODERATE', readings: { ph: 7.2, dissolved_oxygen: 4.8, ammonia: 0.08 } },
-                { id: 3, name: 'Pond C', species: 'Carp', pollution_index: 15.0, final_classification: 'SAFE', readings: { ph: 7.9, dissolved_oxygen: 6.8, ammonia: 0.01 } }
-            ]);
+            renderMultiPonds(hostedPondFallback);
         }
     }
 
@@ -995,31 +995,66 @@
         }
     }
 
+    let hostedStreamTick = 0;
+
+    function renderHostedStreamTick() {
+        hostedStreamTick += 1;
+        const wave = Math.sin(hostedStreamTick / 2) * 0.8;
+        const ponds = hostedPondFallback.map((pond, index) => {
+            const doValue = +(pond.readings.dissolved_oxygen + wave * (index + 1) * 0.35).toFixed(1);
+            const ammoniaValue = +(Math.max(0.01, pond.readings.ammonia - wave * (index + 1) * 0.01)).toFixed(2);
+            const pi = +(Math.max(5, pond.pollution_index + wave * (index + 1) * 4)).toFixed(1);
+            const classification = pi >= 60 ? 'CRITICAL' : pi >= 30 ? 'MODERATE' : 'SAFE';
+            return { ...pond, pollution_index: pi, final_classification: classification,
+                readings: { ...pond.readings, dissolved_oxygen: doValue, ammonia: ammoniaValue } };
+        });
+        renderMultiPonds(ponds);
+    }
+
     async function toggleSimulation() {
         const btn = document.getElementById('btn-toggle-sim');
         if (isSimulating) {
             isSimulating = false;
             if (simInterval) clearInterval(simInterval);
+            simInterval = null;
             if (btn) btn.innerHTML = '<span class="pulse-dot"></span> Live Fleet Stream';
-        } else {
-            isSimulating = true;
-            if (btn) btn.innerText = 'Stop Simulation';
-            try {
-                await fetch(`${API_BASE}/simulate/start`, { method: 'POST' });
-            } catch (e) {}
-
-            simInterval = setInterval(async () => {
-                try {
-                    const res = await fetch(`${API_BASE}/simulate/latest`);
-                    if (res.ok) {
-                        const ponds = await res.json();
-                        renderMultiPonds(ponds);
-                        fetchAlerts();
-                        fetchTrends();
-                    }
-                } catch (e) {}
-            }, 3000);
+            showToast('Live fleet stream stopped.');
+            return;
         }
+
+        isSimulating = true;
+        if (btn) btn.innerText = 'Stop Live Stream';
+        let useHostedFallback = false;
+        try {
+            const startResponse = await fetch(`${API_BASE}/simulate/start`, { method: 'POST' });
+            if (!startResponse.ok) throw new Error(`Simulation start failed: ${startResponse.status}`);
+        } catch (e) {
+            useHostedFallback = true;
+            showToast('Hosted demo stream started. Run FastAPI locally for database-backed telemetry.');
+        }
+
+        const updateStream = async () => {
+            if (useHostedFallback) {
+                renderHostedStreamTick();
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/simulate/latest`);
+                if (!res.ok) throw new Error(`Simulation update failed: ${res.status}`);
+                renderMultiPonds(await res.json());
+                fetchAlerts();
+                fetchTrends();
+            } catch (e) {
+                // Seamlessly continue with changing sample readings if a hosted
+                // backend becomes unavailable during an active stream.
+                useHostedFallback = true;
+                renderHostedStreamTick();
+                showToast('Live backend disconnected — continuing hosted demo stream.');
+            }
+        };
+
+        await updateStream();
+        simInterval = setInterval(updateStream, 3000);
     }
 
     window.addEventListener('resize', resizeCanvas);
