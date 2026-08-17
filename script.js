@@ -215,10 +215,10 @@
         const markRead = document.getElementById('btn-mark-read');
         if (markRead) {
             markRead.addEventListener('click', () => {
-                const badge = document.getElementById('notif-badge');
-                if (badge) badge.style.display = 'none';
-                const list = document.getElementById('notif-list');
-                if (list) list.innerHTML = '<p style="color:#94a3b8; font-size:0.75rem; padding:8px;">All notifications marked as read.</p>';
+                // Persist the action so background refreshes cannot make old
+                // notifications appear unread again.
+                localStorage.setItem('aquasentinel_alerts_read', 'true');
+                updateNotificationReadState();
             });
         }
 
@@ -825,10 +825,9 @@
     async function fetchTrends() {
         try {
             const res = await fetch(`${API_BASE}/trends`);
-            if (res.ok) {
-                const trends = await res.json();
-                drawTrendLineChart(trends);
-            }
+            if (!res.ok) throw new Error(`Trend request failed: ${res.status}`);
+            const trends = await res.json();
+            drawTrendLineChart(trends);
         } catch (e) {
             drawTrendLineChart([
                 { time: '02:00', dissolved_oxygen: 6.8, ammonia: 0.02 },
@@ -896,10 +895,9 @@
     async function fetchModelMetrics() {
         try {
             const res = await fetch(`${API_BASE}/model/metrics`);
-            if (res.ok) {
-                const metrics = await res.json();
-                renderLeaderboard(metrics);
-            }
+            if (!res.ok) throw new Error(`Metrics request failed: ${res.status}`);
+            const metrics = await res.json();
+            renderLeaderboard(metrics);
         } catch (e) {
             renderLeaderboard([
                 { model_name: 'SVM', accuracy: 0.9198, precision: 0.9242, recall: 0.9167, f1_score: 0.9197, is_best: true },
@@ -934,16 +932,28 @@
         `).join('');
     }
 
+    const hostedFallbackAlerts = [
+        { severity: 'MODERATE', parameter: 'Pond B - Tilapia | DO 4.8 (limit 5.0 mg/L)', reason: 'Dissolved oxygen is below the preferred operating range. Monitor aeration.', timestamp: '10:00' },
+        { severity: 'CRITICAL', parameter: 'Pond A - Shrimp | Ammonia 0.12 (limit 0.05 ppm)', reason: 'Reduce feed and perform a partial water exchange.', timestamp: '08:30' }
+    ];
+
     async function fetchAlerts() {
         try {
             const res = await fetch(`${API_BASE}/alerts`);
-            if (res.ok) {
-                const alerts = await res.json();
-                renderAlerts(alerts);
-            }
+            if (!res.ok) throw new Error(`Alerts request failed: ${res.status}`);
+            renderAlerts(await res.json());
         } catch (e) {
-            // Keep default
+            // Vercel/static deployment fallback: keep the notification centre
+            // and the alert section usable when the database API is absent.
+            renderAlerts(hostedFallbackAlerts);
         }
+    }
+
+    function updateNotificationReadState() {
+        const badge = document.getElementById('notif-badge');
+        const notifList = document.getElementById('notif-list');
+        if (badge) badge.style.display = 'none';
+        if (notifList) notifList.innerHTML = '<p style="color:#94a3b8; font-size:0.75rem; padding:8px;">All notifications marked as read.</p>';
     }
 
     function renderAlerts(alerts) {
@@ -968,7 +978,14 @@
             `).join('');
         }
 
-        if (notifList) {
+        if (localStorage.getItem('aquasentinel_alerts_read') === 'true') {
+            updateNotificationReadState();
+        } else if (notifList) {
+            const badge = document.getElementById('notif-badge');
+            if (badge) {
+                badge.style.display = '';
+                badge.innerText = Math.min(alerts.length, 9);
+            }
             notifList.innerHTML = alerts.slice(0, 4).map(a => `
                 <div class="notif-item ${a.severity}">
                     <strong>[${a.severity}] ${a.parameter}</strong>

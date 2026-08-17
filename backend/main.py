@@ -485,6 +485,7 @@ def get_history(db: Session = Depends(get_db)):
         for h in history
     ]
 
+@app.get("/api/report-csv")
 @app.get("/api/report")
 def download_report(db: Session = Depends(get_db)):
     csv_data = generate_csv_report(db)
