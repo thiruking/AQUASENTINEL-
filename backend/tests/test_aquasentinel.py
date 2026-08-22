@@ -113,6 +113,26 @@ def test_api_predict_endpoint():
     assert "final_classification" in data
     assert "parameter_contributions" in data
 
+def test_extreme_reading_is_critical():
+    """Dangerous slider values must never be reported as SAFE."""
+    payload = {
+        "species": "Shrimp",
+        "temperature": 40.0,
+        "turbidity": 99.0,
+        "DO": 12.0,
+        "ph": 10.0,
+        "ammonia": 0.5,
+        "nitrate": 100.0,
+        "salinity": 44.5,
+    }
+    response = client.post("/api/predict", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["pollution_index"] >= 60.0
+    assert data["final_classification"] == "CRITICAL"
+    assert data["recommendations"]
+
+
 def test_api_metrics_endpoint():
     """
     Test /api/model/metrics endpoint.
@@ -122,6 +142,24 @@ def test_api_metrics_endpoint():
     metrics = response.json()
     assert len(metrics) >= 5
     assert any(m["is_best"] for m in metrics)
+
+
+def test_report_downloads_are_valid_files():
+    """CSV and PDF report endpoints must send actual downloadable file data."""
+    csv_response = client.get("/api/report")
+    assert csv_response.status_code == 200
+    assert csv_response.headers["content-type"].startswith("text/csv")
+    assert "attachment;" in csv_response.headers["content-disposition"]
+    assert csv_response.content.startswith(b"timestamp,species,")
+
+    # Both the legacy URL and the Vercel-safe URL must return the PDF.
+    pdf_response = client.get("/api/report-pdf")
+    assert pdf_response.status_code == 200
+    assert pdf_response.headers["content-type"] == "application/pdf"
+    assert client.get("/api/report/pdf").status_code == 200
+    assert "attachment;" in pdf_response.headers["content-disposition"]
+    assert pdf_response.content.startswith(b"%PDF-")
+    assert len(pdf_response.content) > 500
 
 def test_user_registration_and_login():
     """
@@ -174,3 +212,11 @@ def test_user_pond_creation():
     assert data["name"] == "Test Pond Delta"
     assert data["species"] == "Tilapia"
 
+
+
+def test_extreme_slider_values_are_critical():
+    payload = {"species": "Shrimp", "temperature": 40, "turbidity": 99, "DO": 12,
+               "ph": 10, "ammonia": 0.5, "nitrate": 100, "salinity": 44.5}
+    response = client.post("/api/predict", json=payload)
+    assert response.status_code == 200
+    assert response.json()["final_classification"] == "CRITICAL"

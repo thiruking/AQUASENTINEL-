@@ -121,7 +121,7 @@
                             <a href="guide.html" target="_blank" class="btn-pdf" style="background: rgba(56, 189, 248, 0.25);">
                                 📖 Farmer Health Guide
                             </a>
-                            <a href="http://localhost:8000/api/report/pdf" download class="btn-pdf">
+                            <a href="/api/report-pdf" download class="btn-pdf">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                                 Executive PDF
                             </a>
@@ -406,7 +406,7 @@
         </section>
 
         <!-- Trend Line Charts Section -->
-        <section class="stats-section" id="trends">
+        <section class="stats-section tech-only" id="trends">
             <div class="section-header">
                 <span class="section-tag">Historical Telemetry</span>
                 <h2 class="section-title">24-Hour Parameter Trend Analysis</h2>
@@ -423,7 +423,7 @@
         </section>
 
         <!-- FIX 2 RESTORED: Model Explainability (SHAP) -->
-        <section class="stats-section" id="explainability">
+        <section class="stats-section tech-only" id="explainability">
             <div class="section-header">
                 <span class="section-tag">Model Explainability</span>
                 <h2 class="section-title">ML Feature Importance & Drivers</h2>
@@ -448,7 +448,7 @@
         </section>
 
         <!-- FIX 2 RESTORED: Model Evaluation Leaderboard Table -->
-        <section class="stats-section" id="leaderboard">
+        <section class="stats-section tech-only" id="leaderboard">
             <div class="section-header">
                 <span class="section-tag">Empirical ML Benchmark</span>
                 <h2 class="section-title">Trained Model Evaluation Leaderboard</h2>
@@ -490,8 +490,8 @@
                     <div class="alerts-header">
                         <h3>Live Risk Alert Log</h3>
                         <div class="export-actions">
-                            <a href="http://localhost:8000/api/report" download class="btn-demo">Download CSV</a>
-                            <a href="http://localhost:8000/api/report/pdf" download class="btn-pdf">Download PDF Report</a>
+                            <a href="/api/report-csv" download class="btn-demo">Download CSV</a>
+                            <a href="/api/report-pdf" download class="btn-pdf">Download PDF Report</a>
                         </div>
                     </div>
                     <div class="alerts-scroll-box" id="alerts-box">
@@ -502,7 +502,7 @@
         </section>
 
         <!-- System Architecture Section -->
-        <section class="startup-section" id="architecture">
+        <section class="startup-section tech-only" id="architecture">
             <div class="startup-container">
                 <div class="section-header">
                     <span class="section-tag">System Architecture</span>

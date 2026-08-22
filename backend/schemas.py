@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Dict, Optional, Any
 from datetime import datetime
 
@@ -21,8 +21,7 @@ class WaterReadingInput(BaseModel):
     nitrate: Optional[float] = Field(default=5.0)
     salinity: Optional[float] = Field(default=15.0)
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 class ParameterContribution(BaseModel):
     parameter: str
@@ -43,6 +42,7 @@ class PredictionResponse(BaseModel):
     final_classification: str # SAFE, MODERATE, CRITICAL
     explanation: str
     parameter_contributions: List[ParameterContribution]
+    feature_importances: Dict[str, float]
     recommendations: List[str]
     traditional_classification: str
     traditional_reason: str
@@ -83,6 +83,9 @@ class UserLoginInput(BaseModel):
     remember_me: Optional[bool] = False
 
 class UserResponse(BaseModel):
+    # SQLAlchemy model instances are returned by the registration endpoint.
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     email: str
@@ -95,6 +98,9 @@ class PondCreateInput(BaseModel):
     species: str = "Shrimp"
 
 class PondResponse(BaseModel):
+    # SQLAlchemy model instances are returned by the pond creation endpoint.
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     owner_id: Optional[int] = None
     name: str

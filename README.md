@@ -53,23 +53,35 @@ A dedicated, plain-language handbook built for non-technical farmers:
 
 ## ⚡ Quick Run Instructions
 
-### 1. Execute PyTest Suite (9 Passed)
+### 1. Install dependencies
 ```bash
-cd "c:\MINI PROJECT"
+python -m pip install -r backend/requirements.txt pytest
+```
+
+### 2. Run the test suite
+```bash
 python -m pytest backend/tests/test_aquasentinel.py
 ```
 
-### 2. Run FastAPI Backend Server
+### 3. Run AquaSentinel+
 ```bash
 python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
 ```
+Open `http://localhost:8000` for the dashboard and
+`http://localhost:8000/guide.html` for the Pond Health Guide.
 
-### 3. Run Frontend Dashboard
-```bash
-python -m http.server 8086
-```
-Open `http://localhost:8086` in your web browser.
-Open `http://localhost:8086/guide.html` for the Pond Health Guide.
+The FastAPI server now serves the dashboard and API from the same origin, so
+predictions, authentication, reports, and live telemetry work without a
+separate static server or browser-side `localhost` API configuration.
+
+## Vercel report downloads
+
+The repository includes dependency-free Vercel serverless download handlers at
+`/api/report` and `/api/report-pdf`. They make CSV and PDF report downloads work
+on a Vercel static deployment as well as during a local FastAPI run. For live
+predictions, authentication, and database-backed telemetry on a public site,
+deploy the FastAPI service to a Python-capable backend and keep the dashboard
+and API on the same origin (or configure a reverse proxy).
 
 ---
 

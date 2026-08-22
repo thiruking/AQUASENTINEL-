@@ -12,11 +12,19 @@
     let basePath = '';
     let isSimulating = false;
     let simInterval = null;
+    // Slider input events can overlap. Only the newest prediction is allowed
+    // to update the dashboard so an old SAFE response cannot overwrite a new
+    // CRITICAL reading.
+    let latestPredictionRequest = 0;
 
-    let jwtToken = sessionStorage.getItem('aquasentinel_jwt') || null;
+    // Prefer the persistent session only when the user explicitly selected
+    // “Remember me”; otherwise keep the token scoped to this browser tab.
+    let jwtToken = localStorage.getItem('aquasentinel_jwt') || sessionStorage.getItem('aquasentinel_jwt') || null;
     let currentUser = null;
 
-    const API_BASE = 'http://localhost:8000/api';
+    // Use the page origin so the dashboard works in local development and
+    // behind a reverse proxy / hosted preview without browser-side localhost calls.
+    const API_BASE = '/api';
 
     function getFrameFilename(index) {
         const frameNum = String(index + 1).padStart(3, '0');
@@ -207,10 +215,10 @@
         const markRead = document.getElementById('btn-mark-read');
         if (markRead) {
             markRead.addEventListener('click', () => {
-                const badge = document.getElementById('notif-badge');
-                if (badge) badge.style.display = 'none';
-                const list = document.getElementById('notif-list');
-                if (list) list.innerHTML = '<p style="color:#94a3b8; font-size:0.75rem; padding:8px;">All notifications marked as read.</p>';
+                // Persist the action so background refreshes cannot make old
+                // notifications appear unread again.
+                localStorage.setItem('aquasentinel_alerts_read', 'true');
+                updateNotificationReadState();
             });
         }
 
@@ -570,18 +578,29 @@
 
     async function triggerPrediction() {
         const payload = getSliderPayload();
+        const requestId = ++latestPredictionRequest;
         try {
             const res = await fetch(`${API_BASE}/predict`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (res.ok) {
-                const data = await res.json();
+            if (!res.ok) {
+                throw new Error(`Prediction request failed with status ${res.status}`);
+            }
+
+            const data = await res.json();
+            // Ignore delayed responses from older slider positions.
+            if (requestId === latestPredictionRequest) {
                 updatePredictionUI(data);
             }
         } catch (e) {
-            fallbackClientPrediction(payload);
+            // The what-if tool remains useful if the API is temporarily down
+            // or the page was opened through a static server.
+            if (requestId === latestPredictionRequest) {
+                fallbackClientPrediction(payload);
+                showToast('Live API unavailable — showing a local what-if estimate. Start FastAPI for full reports and AI results.');
+            }
         }
     }
 
@@ -754,19 +773,19 @@
         });
     }
 
+    const hostedPondFallback = [
+        { id: 1, name: 'Pond A', species: 'Shrimp', pollution_index: 12.4, final_classification: 'SAFE', readings: { ph: 7.8, dissolved_oxygen: 6.5, ammonia: 0.02 } },
+        { id: 2, name: 'Pond B', species: 'Tilapia', pollution_index: 38.5, final_classification: 'MODERATE', readings: { ph: 7.2, dissolved_oxygen: 4.8, ammonia: 0.08 } },
+        { id: 3, name: 'Pond C', species: 'Carp', pollution_index: 15.0, final_classification: 'SAFE', readings: { ph: 7.9, dissolved_oxygen: 6.8, ammonia: 0.01 } }
+    ];
+
     async function fetchMultiPonds() {
         try {
             const res = await fetch(`${API_BASE}/user/ponds`, { headers: getAuthHeaders() });
-            if (res.ok) {
-                const ponds = await res.json();
-                renderMultiPonds(ponds);
-            }
+            if (!res.ok) throw new Error(`Pond request failed: ${res.status}`);
+            renderMultiPonds(await res.json());
         } catch (e) {
-            renderMultiPonds([
-                { id: 1, name: 'Pond A', species: 'Shrimp', pollution_index: 12.4, final_classification: 'SAFE', readings: { ph: 7.8, dissolved_oxygen: 6.5, ammonia: 0.02 } },
-                { id: 2, name: 'Pond B', species: 'Tilapia', pollution_index: 38.5, final_classification: 'MODERATE', readings: { ph: 7.2, dissolved_oxygen: 4.8, ammonia: 0.08 } },
-                { id: 3, name: 'Pond C', species: 'Carp', pollution_index: 15.0, final_classification: 'SAFE', readings: { ph: 7.9, dissolved_oxygen: 6.8, ammonia: 0.01 } }
-            ]);
+            renderMultiPonds(hostedPondFallback);
         }
     }
 
@@ -803,22 +822,30 @@
         }).join('');
     }
 
+    function buildHostedTrendData(tick = 0) {
+        const base = [
+            [6.8, 0.02], [6.5, 0.02], [6.2, 0.03],
+            [5.9, 0.04], [5.5, 0.06], [6.4, 0.02]
+        ];
+        const now = new Date();
+        return base.map(([oxygen, ammonia], index) => {
+            const phase = Math.sin((tick + index) / 2) * 0.22;
+            const time = new Date(now.getTime() - (base.length - 1 - index) * 2 * 60 * 60 * 1000);
+            return {
+                time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                dissolved_oxygen: +(oxygen + phase).toFixed(2),
+                ammonia: +Math.max(0.01, ammonia - phase / 20).toFixed(3)
+            };
+        });
+    }
+
     async function fetchTrends() {
         try {
             const res = await fetch(`${API_BASE}/trends`);
-            if (res.ok) {
-                const trends = await res.json();
-                drawTrendLineChart(trends);
-            }
+            if (!res.ok) throw new Error(`Trend request failed: ${res.status}`);
+            drawTrendLineChart(await res.json());
         } catch (e) {
-            drawTrendLineChart([
-                { time: '02:00', dissolved_oxygen: 6.8, ammonia: 0.02 },
-                { time: '04:00', dissolved_oxygen: 6.5, ammonia: 0.02 },
-                { time: '06:00', dissolved_oxygen: 6.2, ammonia: 0.03 },
-                { time: '08:00', dissolved_oxygen: 5.9, ammonia: 0.04 },
-                { time: '10:00', dissolved_oxygen: 5.5, ammonia: 0.06 },
-                { time: '12:00', dissolved_oxygen: 6.4, ammonia: 0.02 }
-            ]);
+            drawTrendLineChart(buildHostedTrendData(hostedStreamTick));
         }
     }
 
@@ -877,10 +904,9 @@
     async function fetchModelMetrics() {
         try {
             const res = await fetch(`${API_BASE}/model/metrics`);
-            if (res.ok) {
-                const metrics = await res.json();
-                renderLeaderboard(metrics);
-            }
+            if (!res.ok) throw new Error(`Metrics request failed: ${res.status}`);
+            const metrics = await res.json();
+            renderLeaderboard(metrics);
         } catch (e) {
             renderLeaderboard([
                 { model_name: 'SVM', accuracy: 0.9198, precision: 0.9242, recall: 0.9167, f1_score: 0.9197, is_best: true },
@@ -915,16 +941,28 @@
         `).join('');
     }
 
+    const hostedFallbackAlerts = [
+        { severity: 'MODERATE', parameter: 'Pond B - Tilapia | DO 4.8 (limit 5.0 mg/L)', reason: 'Dissolved oxygen is below the preferred operating range. Monitor aeration.', timestamp: '10:00' },
+        { severity: 'CRITICAL', parameter: 'Pond A - Shrimp | Ammonia 0.12 (limit 0.05 ppm)', reason: 'Reduce feed and perform a partial water exchange.', timestamp: '08:30' }
+    ];
+
     async function fetchAlerts() {
         try {
             const res = await fetch(`${API_BASE}/alerts`);
-            if (res.ok) {
-                const alerts = await res.json();
-                renderAlerts(alerts);
-            }
+            if (!res.ok) throw new Error(`Alerts request failed: ${res.status}`);
+            renderAlerts(await res.json());
         } catch (e) {
-            // Keep default
+            // Vercel/static deployment fallback: keep the notification centre
+            // and the alert section usable when the database API is absent.
+            renderAlerts(hostedFallbackAlerts);
         }
+    }
+
+    function updateNotificationReadState() {
+        const badge = document.getElementById('notif-badge');
+        const notifList = document.getElementById('notif-list');
+        if (badge) badge.style.display = 'none';
+        if (notifList) notifList.innerHTML = '<p style="color:#94a3b8; font-size:0.75rem; padding:8px;">All notifications marked as read.</p>';
     }
 
     function renderAlerts(alerts) {
@@ -949,7 +987,14 @@
             `).join('');
         }
 
-        if (notifList) {
+        if (localStorage.getItem('aquasentinel_alerts_read') === 'true') {
+            updateNotificationReadState();
+        } else if (notifList) {
+            const badge = document.getElementById('notif-badge');
+            if (badge) {
+                badge.style.display = '';
+                badge.innerText = Math.min(alerts.length, 9);
+            }
             notifList.innerHTML = alerts.slice(0, 4).map(a => `
                 <div class="notif-item ${a.severity}">
                     <strong>[${a.severity}] ${a.parameter}</strong>
@@ -959,31 +1004,67 @@
         }
     }
 
+    let hostedStreamTick = 0;
+
+    function renderHostedStreamTick() {
+        hostedStreamTick += 1;
+        const wave = Math.sin(hostedStreamTick / 2) * 0.8;
+        const ponds = hostedPondFallback.map((pond, index) => {
+            const doValue = +(pond.readings.dissolved_oxygen + wave * (index + 1) * 0.35).toFixed(1);
+            const ammoniaValue = +(Math.max(0.01, pond.readings.ammonia - wave * (index + 1) * 0.01)).toFixed(2);
+            const pi = +(Math.max(5, pond.pollution_index + wave * (index + 1) * 4)).toFixed(1);
+            const classification = pi >= 60 ? 'CRITICAL' : pi >= 30 ? 'MODERATE' : 'SAFE';
+            return { ...pond, pollution_index: pi, final_classification: classification,
+                readings: { ...pond.readings, dissolved_oxygen: doValue, ammonia: ammoniaValue } };
+        });
+        renderMultiPonds(ponds);
+    }
+
     async function toggleSimulation() {
         const btn = document.getElementById('btn-toggle-sim');
         if (isSimulating) {
             isSimulating = false;
             if (simInterval) clearInterval(simInterval);
+            simInterval = null;
             if (btn) btn.innerHTML = '<span class="pulse-dot"></span> Live Fleet Stream';
-        } else {
-            isSimulating = true;
-            if (btn) btn.innerText = 'Stop Simulation';
-            try {
-                await fetch(`${API_BASE}/simulate/start`, { method: 'POST' });
-            } catch (e) {}
-
-            simInterval = setInterval(async () => {
-                try {
-                    const res = await fetch(`${API_BASE}/simulate/latest`);
-                    if (res.ok) {
-                        const ponds = await res.json();
-                        renderMultiPonds(ponds);
-                        fetchAlerts();
-                        fetchTrends();
-                    }
-                } catch (e) {}
-            }, 3000);
+            showToast('Live fleet stream stopped.');
+            return;
         }
+
+        isSimulating = true;
+        if (btn) btn.innerText = 'Stop Live Stream';
+        let useHostedFallback = false;
+        try {
+            const startResponse = await fetch(`${API_BASE}/simulate/start`, { method: 'POST' });
+            if (!startResponse.ok) throw new Error(`Simulation start failed: ${startResponse.status}`);
+        } catch (e) {
+            useHostedFallback = true;
+            showToast('Hosted demo stream started. Run FastAPI locally for database-backed telemetry.');
+        }
+
+        const updateStream = async () => {
+            if (useHostedFallback) {
+                renderHostedStreamTick();
+                drawTrendLineChart(buildHostedTrendData(hostedStreamTick));
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/simulate/latest`);
+                if (!res.ok) throw new Error(`Simulation update failed: ${res.status}`);
+                renderMultiPonds(await res.json());
+                fetchAlerts();
+                fetchTrends();
+            } catch (e) {
+                // Seamlessly continue with changing sample readings if a hosted
+                // backend becomes unavailable during an active stream.
+                useHostedFallback = true;
+                renderHostedStreamTick();
+                showToast('Live backend disconnected — continuing hosted demo stream.');
+            }
+        };
+
+        await updateStream();
+        simInterval = setInterval(updateStream, 3000);
     }
 
     window.addEventListener('resize', resizeCanvas);
